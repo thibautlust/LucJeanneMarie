@@ -72,7 +72,7 @@ var DEF=[
 "Quel est le vrai prénom du témoin ? | Jean | Paul | Marc | Luc | D"
 ].join("\n");
 var G=[100,200,300,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,1000000];
-var raw=DEF,names="Léa & Tom";
+var raw=DEF,names="Jeanne-Marie et Luc";
 try{raw=localStorage.getItem("qvgdm_q")||DEF;names=localStorage.getItem("qvgdm_n")||names}catch(e){}
 var $=function(id){return document.getElementById(id)};
 var qs,gains,i,sel,locked,used,hid,over,sid,poll,dbUrl="";
