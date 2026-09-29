@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vote du public</title>
+<style>
+body{margin:0;background:#0a1240;color:#fff;font-family:Georgia,serif;text-align:center;padding:20px;min-height:100vh}
+h1{color:#f5c542;font-size:22px}
+#g{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+button{font:bold 44px Georgia,serif;padding:34px 0;border-radius:20px;border:3px solid #5b6bd6;background:#14206b;color:#f5c542}
+button.on{background:#e08a00;color:#111}
+button:disabled{opacity:.25}
+#m{margin-top:24px;font-size:20px}
+</style></head><body>
+<h1>📱 Appel au public</h1>
+<div id="m">En attente de la question…</div>
+<div id="g"></div>
+<script>
+var db=new URLSearchParams(location.search).get("db"),vid,done="",last="";
+try{vid=localStorage.getItem("vid");if(!vid){vid=Math.random().toString(36).slice(2);localStorage.setItem("vid",vid)}}catch(e){vid=Math.random().toString(36).slice(2)}
+function u(p){return db.replace(/\/$/,"")+"/"+p+".json"}
+function draw(st){
+ var key=st.s+"-"+st.q,g=document.getElementById("g"),m=document.getElementById("m");
+ if(!st.open){g.innerHTML="";last="";m.textContent=done==key?"Vote enregistré ✔ Merci !":"Vote clôturé. En attente de la prochaine question…";return}
+ if(done==key){g.innerHTML="";m.textContent="Vote enregistré ✔ Regardez l'écran !";return}
+ if(last==key&&g.children.length)return;
+ last=key;m.textContent="Quelle est la bonne réponse ?";g.innerHTML="";
+ "ABCD".split("").forEach(function(L,k){
+  var b=document.createElement("button");b.textContent=L;b.disabled=(st.h||[]).indexOf(k)>=0;
+  b.onclick=function(){
+   b.className="on";
+   fetch(u("votes/"+st.s+"/"+st.q+"/"+vid),{method:"PUT",body:JSON.stringify(L)}).then(function(r){
+    if(r.ok||r.status==401||r.status==403){done=key;draw(st)}else{m.textContent="Erreur, réessayez."}
+   }).catch(function(){m.textContent="Erreur réseau, réessayez."});
+  };
+  g.appendChild(b);
+ });
+}
+function poll(){
+ if(!db){document.getElementById("m").textContent="Lien invalide : scannez le QR code affiché à l'écran.";return}
+ fetch(u("state")).then(function(r){return r.json()}).then(function(st){if(st)draw(st)}).catch(function(){});
+}
+poll();setInterval(poll,1500);
+</script></body></html>

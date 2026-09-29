@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Qui veut gagner des millions ? Édition mariage</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--gold:#f5c542;--card:#14206b;--line:#5b6bd6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:#0a1240;background-image:radial-gradient(circle at 50% 0,#1e2f9c,#0a1240 70%);color:#fff;font-family:Georgia,"Times New Roman",serif;min-height:100vh}
+h1{margin:0;text-align:center;color:var(--gold);font-size:clamp(20px,4vw,34px);padding:14px 10px 0}
+.sub{text-align:center;opacity:.8;margin-bottom:10px}
+.wrap{display:flex;gap:16px;max-width:1100px;margin:0 auto;padding:10px 14px 30px;flex-wrap:wrap}
+.main{flex:1 1 520px;min-width:0}
+.ladder{flex:0 0 200px;display:flex;flex-direction:column;gap:3px}
+.step{display:flex;justify-content:space-between;padding:4px 10px;border-radius:6px;font-size:15px;color:#b9c2ff}
+.step.safe{color:#fff;font-weight:bold}
+.step.cur{background:var(--gold);color:#111;font-weight:bold}
+.step.done{opacity:.45}
+.q{background:var(--card);border:2px solid var(--line);border-radius:40px;padding:22px 26px;text-align:center;font-size:clamp(18px,3vw,28px);margin:10px 0 16px}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.a{background:var(--card);border:2px solid var(--line);border-radius:30px;color:#fff;font:inherit;font-size:clamp(16px,2.4vw,22px);padding:14px 18px;text-align:left;cursor:pointer}
+.a b{color:var(--gold);margin-right:8px}
+.a:hover:not(:disabled){border-color:var(--gold)}
+.a.sel{background:#e08a00;border-color:#ffd27a;color:#111}
+.a.ok{background:#1a9a3f;border-color:#8dffb0}
+.a.ko{background:#c02323;border-color:#ff9a9a}
+.a.off{visibility:hidden}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+button.b{background:var(--gold);color:#111;border:0;border-radius:20px;padding:10px 18px;font:inherit;font-weight:bold;cursor:pointer}
+button.b.j{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+button.b:disabled{opacity:.35;cursor:default;text-decoration:line-through}
+#msg{margin-top:14px;min-height:28px;font-size:18px;color:var(--gold)}
+.aud{display:flex;gap:10px;align-items:flex-end;height:90px;margin-top:8px}
+.aud div{flex:1;background:var(--gold);color:#111;text-align:center;font-size:13px;border-radius:4px 4px 0 0;padding-top:2px}
+.end{text-align:center;padding:30px 10px;font-size:clamp(20px,3.5vw,32px)}
+details{max-width:1100px;margin:0 auto;padding:0 14px 30px}
+summary{cursor:pointer;color:var(--gold)}
+textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;font:14px monospace;margin:6px 0}
+@media(max-width:700px){.ans{grid-template-columns:1fr}.ladder{flex:1 1 100%;flex-direction:column-reverse}}
+</style></head><body>
+<h1 id="title">Qui veut gagner des millions ?</h1>
+<div class="sub" id="sub"></div>
+<div class="wrap">
+  <div class="main">
+    <div class="q" id="q"></div>
+    <div class="ans" id="ans"></div>
+    <div class="bar" id="bar"></div>
+    <div id="msg"></div>
+    <div id="extra"></div>
+  </div>
+  <div class="ladder" id="ladder"></div>
+</div>
+<details><summary>⚙️ Personnaliser (noms, questions)</summary>
+  <p>Noms des mariés :</p><input id="names" value="Léa & Tom">
+  <p>Adresse de la base Firebase pour le vote des invités (optionnel) :</p><input id="db" placeholder="https://xxxx-default-rtdb.europe-west1.firebasedatabase.app">
+  <p>Une question par ligne, au format : <code>Question | A | B | C | D | lettre de la bonne réponse</code> (15 questions max, la dernière vaut 1 000 000 €)</p>
+  <textarea id="raw" rows="14"></textarea>
+  <button class="b" id="save">Enregistrer et relancer le jeu</button>
+</details>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+var DEF=[
+"Dans quelle ville les mariés se sont-ils rencontrés ? | Paris | Lyon | Marseille | Bordeaux | A",
+"Qui a dit « je t'aime » en premier ? | Elle | Lui | Les deux en même temps | Le chat | A",
+"Quel est le plat préféré du marié ? | Pizza | Couscous | Raclette | Sushis | C",
+"En quelle année ont-ils commencé à sortir ensemble ? | 2015 | 2017 | 2019 | 2021 | B",
+"Où a eu lieu la demande en mariage ? | À la plage | Au restaurant | À la maison | En montagne | B",
+"Quelle est la série préférée de la mariée ? | Friends | Game of Thrones | Emily in Paris | Plus belle la vie | A",
+"Combien de temps le marié a-t-il mis pour choisir sa tenue ? | 10 minutes | 1 heure | 1 journée | 1 mois | C",
+"Quel est le plus grand défaut du marié (selon la mariée) ? | Il ronfle | Il est en retard | Il oublie tout | Il chante faux | B",
+"Quel sera le premier voyage de noces ? | Italie | Japon | Maldives | Camping | A",
+"Quel est le vrai prénom du témoin ? | Jean | Paul | Marc | Luc | D"
+].join("\n");
+var G=[100,200,300,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,1000000];
+var raw=DEF,names="Léa & Tom";
+try{raw=localStorage.getItem("qvgdm_q")||DEF;names=localStorage.getItem("qvgdm_n")||names}catch(e){}
+var $=function(id){return document.getElementById(id)};
+var qs,gains,i,sel,locked,used,hid,over,sid,poll,dbUrl="";
+try{dbUrl=localStorage.getItem("qvgdm_db")||""}catch(e){}
+function eur(n){return n.toLocaleString("fr-FR")+" €"}
+function parse(t){return t.split("\n").map(function(l){return l.split("|").map(function(s){return s.trim()})}).filter(function(p){return p.length>=6&&p[0]&&"ABCD".indexOf(p[5].toUpperCase())>=0}).slice(0,15).map(function(p){return{q:p[0],a:p.slice(1,5),c:"ABCD".indexOf(p[5].toUpperCase())}})}
+function isSafe(j){return (j+1)%5==0&&j+1<qs.length}
+function start(){qs=parse(raw);gains=G.slice(G.length-qs.length);i=0;sel=-1;locked=false;used={f:0,p:0,a:0};hid=[];over=false;sid=Date.now().toString(36);
+ $("sub").textContent="Édition mariage : "+names;$("raw").value=raw;$("names").value=names;$("db").value=dbUrl;render()}
+function safeAmt(){for(var j=i-1;j>=0;j--)if(isSafe(j))return gains[j];return 0}
+function render(){
+ var L=$("ladder");L.innerHTML="";
+ for(var j=qs.length-1;j>=0;j--){var d=document.createElement("div");d.className="step"+(isSafe(j)?" safe":"")+(j==i&&!over?" cur":"")+(j<i?" done":"");d.innerHTML="<span>"+(j+1)+"</span><span>"+eur(gains[j])+"</span>";L.appendChild(d)}
+ if(over){return}
+ var Q=qs[i];$("q").textContent=Q.q;$("ans").innerHTML="";$("extra").innerHTML="";
+ Q.a.forEach(function(t,k){var b=document.createElement("button");b.className="a"+(sel==k?" sel":"")+(hid.indexOf(k)>=0?" off":"");b.innerHTML="<b>"+"ABCD"[k]+" :</b>"+t;b.disabled=locked;b.onclick=function(){sel=k;render()};$("ans").appendChild(b)});
+ var bar=$("bar");bar.innerHTML="";
+ function btn(txt,cls,fn,dis){var b=document.createElement("button");b.className="b "+cls;b.textContent=txt;b.disabled=!!dis;b.onclick=fn;bar.appendChild(b)}
+ if(!locked){
+  btn("Réponse finale ✔","",validate,sel<0);
+  btn("50/50","j",fifty,used.f);btn("Public","j",audience,used.p);btn("Appel à un ami","j",phone,used.a);
+  btn("Abandonner","j",quit)
+ }
+}
+function validate(){locked=true;var Q=qs[i],A=$("ans").children;
+ for(var k=0;k<4;k++){if(k==Q.c)A[k].className="a ok";else if(k==sel)A[k].className="a ko"}
+ var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";
+ if(sel==Q.c){$("msg").textContent="Bonne réponse ! Vous avez "+eur(gains[i])+" 🎉";
+  if(i==qs.length-1){over=true;b.textContent="Rejouer";b.onclick=start;$("q").textContent="🏆 Félicitations "+names+" ! Vous gagnez "+eur(gains[i])+" (de bonheur) !";$("ans").innerHTML=""}
+  else{b.textContent="Question suivante";b.onclick=function(){i++;sel=-1;locked=false;hid=[];$("msg").textContent="";render()}}
+ }else{over=true;$("msg").textContent="";b.textContent="Rejouer";b.onclick=start;$("q").textContent="Mauvaise réponse ! Repartez avec "+eur(safeAmt())+"."}
+ bar.appendChild(b);if(over){var L=$("ladder");}}
+function quit(){over=true;$("q").textContent="Vous abandonnez et repartez avec "+eur(i>0?gains[i-1]:0)+".";$("ans").innerHTML="";$("bar").innerHTML="";var b=document.createElement("button");b.className="b";b.textContent="Rejouer";b.onclick=start;$("bar").appendChild(b);render2()}
+function render2(){var L=$("ladder");L.querySelectorAll(".cur").forEach(function(e){e.classList.remove("cur")})}
+function fifty(){used.f=1;var Q=qs[i],w=[0,1,2,3].filter(function(k){return k!=Q.c});w.sort(function(){return Math.random()-.5});hid=w.slice(0,2);if(hid.indexOf(sel)>=0)sel=-1;render()}
+function api(p,m,b){return fetch(dbUrl.replace(/\/$/,"")+"/"+p+".json",{method:m||"GET",body:b?JSON.stringify(b):undefined}).then(function(r){return r.json()})}
+function show(v){var e=$("res");if(!e){clearInterval(poll);return}var c=[0,0,0,0],n=0;Object.keys(v).forEach(function(k){var x="ABCD".indexOf(v[k]);if(x>=0){c[x]++;n++}});
+ e.innerHTML=[0,1,2,3].map(function(k){var p=n?Math.round(c[k]*100/n):0;return hid.indexOf(k)>=0?"<div style='visibility:hidden'></div>":"<div style='height:"+Math.max(p,8)+"%'>"+"ABCD"[k]+" "+p+"%</div>"}).join("")+"<div style='flex:0 0 auto;background:none;color:#fff;align-self:center'>"+n+" votes</div>"}
+function audience(){used.p=1;render();
+ if(!dbUrl){return fakeAudience()}
+ var base=location.href.split("?")[0].replace(/[^\/]*$/,"")+"vote.html?db="+encodeURIComponent(dbUrl),q0=i;
+ api("state","PUT",{s:sid,q:q0,open:true,h:hid}).catch(function(){$("msg").textContent="Erreur Firebase : vérifiez l'adresse et les règles."});
+ $("extra").innerHTML="<div style='display:flex;gap:20px;align-items:center;flex-wrap:wrap'><div id='qr' style='background:#fff;padding:8px;border-radius:8px'></div><div style='flex:1;min-width:240px'><div class='end' style='padding:0;text-align:left'>📱 Scannez pour voter !</div><div id='res' class='aud'></div><button class='b' id='close'>Clôturer le vote</button></div></div>";
+ try{new QRCode($("qr"),{text:base,width:200,height:200})}catch(x){$("qr").textContent=base}
+ function tick(){api("votes/"+sid+"/"+q0).then(function(v){show(v||{})}).catch(function(){})}
+ clearInterval(poll);poll=setInterval(tick,1000);tick();
+ $("close").onclick=function(){clearInterval(poll);api("state","PUT",{s:sid,q:q0,open:false,h:hid});tick();$("close").remove()}
+}
+function fakeAudience(){var Q=qs[i],v=[0,0,0,0],vis=[0,1,2,3].filter(function(k){return hid.indexOf(k)<0}),left=100,main=Math.max(35,Math.round(75-i*4+Math.random()*10));
+ v[Q.c]=main;left-=main;var o=vis.filter(function(k){return k!=Q.c});o.forEach(function(k,n){var p=n==o.length-1?left:Math.round(Math.random()*left);v[k]=p;left-=p});
+ $("extra").innerHTML='<div class="aud">'+[0,1,2,3].map(function(k){return hid.indexOf(k)>=0?"<div style='visibility:hidden'></div>":"<div style='height:"+Math.max(v[k],8)+"%'>"+"ABCD"[k]+" "+v[k]+"%</div>"}).join("")+"</div>"}
+function phone(){used.a=1;render();var t=30,e=$("extra");e.innerHTML="<div class='end' id='t'></div>";var iv=setInterval(function(){$("t").textContent="📞 Appel à un ami : "+t+" s";t--;if(t<0){clearInterval(iv);$("t").textContent="Temps écoulé !"}},1000);$("t").textContent="📞 Appel à un ami : 30 s"}
+$("save").onclick=function(){raw=$("raw").value;names=$("names").value||names;dbUrl=$("db").value.trim();try{localStorage.setItem("qvgdm_q",raw);localStorage.setItem("qvgdm_n",names);localStorage.setItem("qvgdm_db",dbUrl)}catch(e){}start();window.scrollTo(0,0)};
+start();
+</script></body></html>
