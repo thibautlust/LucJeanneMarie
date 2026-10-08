@@ -79,6 +79,7 @@ var DEF=[
 "Combien d'années de mariage pour fêter des noces d'or ? | 25 | 40 | 50 | 60 | C | q15.jpg"
 ].join("\n");
 var P=[{n:1,name:"coton"},{n:2,name:"cuir"},{n:5,name:"bois"},{n:7,name:"laine"},{n:9,name:"faïence"},{n:10,name:"étain"},{n:12,name:"soie"},{n:15,name:"cristal"},{n:20,name:"porcelaine"},{n:25,name:"argent"},{n:30,name:"perle"},{n:35,name:"jade"},{n:40,name:"rubis"},{n:45,name:"saphir"},{n:50,name:"or"}];
+function st(j){return qs.length<2?14:Math.round(j*14/(qs.length-1))}
 function noce(g){return "noces "+(/^[aeiouyéèh]/i.test(g.name)?"d'":"de ")+g.name}
 var raw=DEF,names="Léa & Tom";
 try{raw=localStorage.getItem("qvgdm_q")||DEF;names=localStorage.getItem("qvgdm_n")||names}catch(e){}
@@ -87,15 +88,15 @@ var qs,gains,i,sel,locked,used,hid,over,sid,poll,good,dbUrl="";
 try{dbUrl=localStorage.getItem("qvgdm_db")||""}catch(e){}
 function eur(n){return n.toLocaleString("fr-FR")+" €"}
 function parse(t){return t.split("\n").map(function(l){return l.split("|").map(function(s){return s.trim()})}).filter(function(p){return p.length>=6&&p[0]&&"ABCD".indexOf(p[5].toUpperCase())>=0}).slice(0,15).map(function(p){return{q:p[0],a:p.slice(1,5),c:"ABCD".indexOf(p[5].toUpperCase()),img:p[6]||""}})}
-function isSafe(j){return gains[j].n==25||gains[j].n==50}
-function start(){qs=parse(raw);gains=P.slice(P.length-qs.length);i=0;sel=-1;locked=false;used={f:0,p:0,a:0};hid=[];over=false;good=0;sid=Date.now().toString(36);
+function isSafe(j){return P[j].n==25||P[j].n==50}
+function start(){qs=parse(raw);gains=qs.map(function(_,j){return P[st(j)]});i=0;sel=-1;locked=false;used={f:0,p:0,a:0};hid=[];over=false;good=0;sid=Date.now().toString(36);
  $("sub").textContent="Édition mariage : "+names;$("raw").value=raw;$("names").value=names;$("db").value=dbUrl;render()}
 function render(){
  var L=$("ladder");L.innerHTML="";
- for(var j=qs.length-1;j>=0;j--){var d=document.createElement("div");d.className="step"+(isSafe(j)?" safe":"")+(j==i&&!over?" cur":"")+(j<i?" done":"");d.innerHTML="<span>"+gains[j].n+(gains[j].n>1?" ans":" an")+"</span><span>"+gains[j].name+"</span>";L.appendChild(d)}
+ for(var j=P.length-1;j>=0;j--){var d=document.createElement("div");d.className="step"+(isSafe(j)?" safe":"")+(j==st(i)&&!over?" cur":"")+(j<st(i)?" done":"");d.innerHTML="<span>"+P[j].n+(P[j].n>1?" ans":" an")+"</span><span>"+P[j].name+"</span>";L.appendChild(d)}
  if(over){return}
  var Q=qs[i];$("q").textContent=Q.q;var im=$("pic");if(Q.img){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(Q.img)?Q.img:"photos/"+Q.img;im.hidden=false}else{im.hidden=true}$("ans").innerHTML="";$("extra").innerHTML="";
- Q.a.forEach(function(t,k){var b=document.createElement("button");b.className="a"+(sel==k?" sel":"")+(hid.indexOf(k)>=0?" off":"");b.innerHTML="<b>"+"ABCD"[k]+" :</b>"+t;b.disabled=locked;b.onclick=function(){sel=k;render()};$("ans").appendChild(b)});
+ Q.a.forEach(function(t,k){var b=document.createElement("button");b.className="a"+(sel==k?" sel":"")+(hid.indexOf(k)>=0?" off":"");b.innerHTML="<b>"+"ABCD"[k]+" :</b>"+t;b.disabled=locked;b.onclick=function(){if(locked)return;sel=k;render()};$("ans").appendChild(b)});
  var bar=$("bar");bar.innerHTML="";
  function btn(txt,cls,fn,dis){var b=document.createElement("button");b.className="b "+cls;b.textContent=txt;b.disabled=!!dis;b.onclick=fn;bar.appendChild(b)}
  if(!locked){
@@ -103,8 +104,9 @@ function render(){
   btn("50/50","j",fifty,used.f);btn("Public","j",audience,used.p);btn("Appel à un ami","j",phone,used.a)
  }
 }
-function validate(){locked=true;var Q=qs[i],A=$("ans").children,ok=sel==Q.c;
+function validate(){if(locked)return;locked=true;var Q=qs[i],A=$("ans").children,ok=sel==Q.c;
  for(var k=0;k<4;k++){if(k==Q.c)A[k].className="a ok";else if(k==sel)A[k].className="a ko"}
+ for(var k=0;k<4;k++)A[k].disabled=true;
  if(ok)good++;
  var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";
  $("msg").textContent=(ok?"Bonne réponse ! 🎉":"Raté ! La bonne réponse était la "+"ABCD"[Q.c]+" 😅")+" On passe aux "+noce(gains[i])+" ("+gains[i].n+(gains[i].n>1?" ans":" an")+").";
@@ -128,7 +130,7 @@ function audience(){used.p=1;render();
 function fakeAudience(){var Q=qs[i],v=[0,0,0,0],vis=[0,1,2,3].filter(function(k){return hid.indexOf(k)<0}),left=100,main=Math.max(35,Math.round(75-i*4+Math.random()*10));
  v[Q.c]=main;left-=main;var o=vis.filter(function(k){return k!=Q.c});o.forEach(function(k,n){var p=n==o.length-1?left:Math.round(Math.random()*left);v[k]=p;left-=p});
  $("extra").innerHTML='<div class="aud">'+[0,1,2,3].map(function(k){return hid.indexOf(k)>=0?"<div style='visibility:hidden'></div>":"<div style='height:"+Math.max(v[k],8)+"%'>"+"ABCD"[k]+" "+v[k]+"%</div>"}).join("")+"</div>"}
-function phone(){used.a=1;render();var t=30,e=$("extra");e.innerHTML="<div class='end' id='t'></div>";var iv=setInterval(function(){$("t").textContent="📞 Appel à un ami : "+t+" s";t--;if(t<0){clearInterval(iv);$("t").textContent="Temps écoulé !"}},1000);$("t").textContent="📞 Appel à un ami : 30 s"}
+function phone(){used.a=1;render();var t=30,e=$("extra");e.innerHTML="<div class='end' id='t'></div>";var iv=setInterval(function(){if(!$("t")){clearInterval(iv);return}$("t").textContent="📞 Appel à un ami : "+t+" s";t--;if(t<0){clearInterval(iv);$("t").textContent="Temps écoulé !"}},1000);$("t").textContent="📞 Appel à un ami : 30 s"}
 $("save").onclick=function(){raw=$("raw").value;names=$("names").value||names;dbUrl=$("db").value.trim();try{localStorage.setItem("qvgdm_q",raw);localStorage.setItem("qvgdm_n",names);localStorage.setItem("qvgdm_db",dbUrl)}catch(e){}start();window.scrollTo(0,0)};
 start();
 </script></body></html>
