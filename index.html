@@ -37,6 +37,7 @@ details{max-width:1100px;margin:0 auto;padding:0 14px 30px}
 summary{cursor:pointer;color:var(--gold)}
 textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;font:14px monospace;margin:6px 0}
 .pic{display:block;margin:0 auto 14px;max-width:100%;max-height:34vh;border-radius:16px;border:3px solid var(--gold)}
+.pic[hidden]{display:none}
 @media(max-width:700px){.ans{grid-template-columns:1fr}.ladder{flex:1 1 100%;flex-direction:column-reverse}}
 </style></head><body>
 <h1 id="title">Qui veut gagner des noces d'or ?</h1>
@@ -55,6 +56,7 @@ textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--l
 <details><summary>⚙️ Personnaliser (noms, questions)</summary>
   <p>Noms des mariés :</p><input id="names" value="Léa & Tom">
   <p>Adresse de la base Firebase pour le vote des invités (optionnel) :</p><input id="db" placeholder="https://xxxx-default-rtdb.europe-west1.firebasedatabase.app">
+  <p>Photo de l'écran final (fichier du dossier photos/ ou adresse https) :</p><input id="fp" placeholder="final.jpg">
   <p>Une question par ligne : <code>Question | A | B | C | D | lettre de la bonne réponse | photo (facultatif)</code>. La photo est un nom de fichier du dossier <code>photos/</code> (ex. <code>q1.jpg</code>) ou une adresse https. 15 questions max, la dernière mène aux noces d'or.</p>
   <textarea id="raw" rows="14"></textarea>
   <button class="b" id="save">Enregistrer et relancer le jeu</button>
@@ -85,17 +87,18 @@ var raw=DEF,names="Léa & Tom";
 try{raw=localStorage.getItem("qvgdm_q")||DEF;names=localStorage.getItem("qvgdm_n")||names}catch(e){}
 var $=function(id){return document.getElementById(id)};
 var qs,gains,i,sel,locked,used,hid,over,sid,poll,good,dbUrl="";
-try{dbUrl=localStorage.getItem("qvgdm_db")||""}catch(e){}
+var fp="final.jpg";
+try{dbUrl=localStorage.getItem("qvgdm_db")||"";fp=localStorage.getItem("qvgdm_fp")||fp}catch(e){}
 function eur(n){return n.toLocaleString("fr-FR")+" €"}
 function parse(t){return t.split("\n").map(function(l){return l.split("|").map(function(s){return s.trim()})}).filter(function(p){return p.length>=6&&p[0]&&"ABCD".indexOf(p[5].toUpperCase())>=0}).slice(0,15).map(function(p){return{q:p[0],a:p.slice(1,5),c:"ABCD".indexOf(p[5].toUpperCase()),img:p[6]||""}})}
 function isSafe(j){return P[j].n==25||P[j].n==50}
 function start(){qs=parse(raw);gains=qs.map(function(_,j){return P[st(j)]});i=0;sel=-1;locked=false;used={f:0,p:0,a:0};hid=[];over=false;good=0;sid=Date.now().toString(36);
- $("sub").textContent="Édition mariage : "+names;$("raw").value=raw;$("names").value=names;$("db").value=dbUrl;render()}
+ $("sub").textContent="Édition mariage : "+names;$("raw").value=raw;$("names").value=names;$("db").value=dbUrl;$("fp").value=fp;render()}
 function render(){
  var L=$("ladder");L.innerHTML="";
  for(var j=P.length-1;j>=0;j--){var d=document.createElement("div");d.className="step"+(isSafe(j)?" safe":"")+(j==st(i)&&!over?" cur":"")+(j<st(i)?" done":"");d.innerHTML="<span>"+P[j].n+(P[j].n>1?" ans":" an")+"</span><span>"+P[j].name+"</span>";L.appendChild(d)}
  if(over){return}
- var Q=qs[i];$("q").textContent=Q.q;var im=$("pic");if(Q.img){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(Q.img)?Q.img:"photos/"+Q.img;im.hidden=false}else{im.hidden=true}$("ans").innerHTML="";$("extra").innerHTML="";
+ var Q=qs[i];$("q").textContent=Q.q;var im=$("pic");im.style.maxHeight="";if(Q.img){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(Q.img)?Q.img:"photos/"+Q.img;im.hidden=false}else{im.hidden=true}$("ans").innerHTML="";$("extra").innerHTML="";
  Q.a.forEach(function(t,k){var b=document.createElement("button");b.className="a"+(sel==k?" sel":"")+(hid.indexOf(k)>=0?" off":"");b.innerHTML="<b>"+"ABCD"[k]+" :</b>"+t;b.disabled=locked;b.onclick=function(){if(locked)return;sel=k;render()};$("ans").appendChild(b)});
  var bar=$("bar");bar.innerHTML="";
  function btn(txt,cls,fn,dis){var b=document.createElement("button");b.className="b "+cls;b.textContent=txt;b.disabled=!!dis;b.onclick=fn;bar.appendChild(b)}
@@ -104,13 +107,18 @@ function render(){
   btn("50/50","j",fifty,used.f);btn("Public","j",audience,used.p);btn("Appel à un ami","j",phone,used.a)
  }
 }
+function finale(){over=true;locked=true;var im=$("pic");
+ if(fp){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(fp)?fp:"photos/"+fp;im.style.maxHeight="48vh";im.hidden=false}else{im.hidden=true}
+ $("ans").innerHTML="";$("msg").textContent="";$("extra").innerHTML="";
+ $("q").textContent="🏆 Félicitations "+names+" ! Vous avez atteint les "+noce(gains[qs.length-1])+" ! Score : "+good+"/"+qs.length+" bonnes réponses.";
+ var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";b.textContent="Rejouer";b.onclick=start;bar.appendChild(b)}
 function validate(){if(locked)return;locked=true;var Q=qs[i],A=$("ans").children,ok=sel==Q.c;
  for(var k=0;k<4;k++){if(k==Q.c)A[k].className="a ok";else if(k==sel)A[k].className="a ko"}
  for(var k=0;k<4;k++)A[k].disabled=true;
  if(ok)good++;
  var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";
  $("msg").textContent=(ok?"Bonne réponse ! 🎉":"Raté ! La bonne réponse était la "+"ABCD"[Q.c]+" 😅")+" On passe aux "+noce(gains[i])+" ("+gains[i].n+(gains[i].n>1?" ans":" an")+").";
- if(i==qs.length-1){over=true;$("pic").hidden=true;b.textContent="Rejouer";b.onclick=start;$("ans").innerHTML="";$("msg").textContent="";$("q").textContent="🏆 Félicitations "+names+" ! Vous atteignez les "+noce(gains[i])+" ! Score : "+good+"/"+qs.length+" bonnes réponses."}
+ if(i==qs.length-1){b.textContent="Voir le résultat final";b.onclick=finale}
  else{b.textContent="Question suivante";b.onclick=function(){i++;sel=-1;locked=false;hid=[];$("msg").textContent="";render()}}
  bar.appendChild(b)}
 function fifty(){used.f=1;var Q=qs[i],w=[0,1,2,3].filter(function(k){return k!=Q.c});w.sort(function(){return Math.random()-.5});hid=w.slice(0,2);if(hid.indexOf(sel)>=0)sel=-1;render()}
@@ -131,6 +139,6 @@ function fakeAudience(){var Q=qs[i],v=[0,0,0,0],vis=[0,1,2,3].filter(function(k)
  v[Q.c]=main;left-=main;var o=vis.filter(function(k){return k!=Q.c});o.forEach(function(k,n){var p=n==o.length-1?left:Math.round(Math.random()*left);v[k]=p;left-=p});
  $("extra").innerHTML='<div class="aud">'+[0,1,2,3].map(function(k){return hid.indexOf(k)>=0?"<div style='visibility:hidden'></div>":"<div style='height:"+Math.max(v[k],8)+"%'>"+"ABCD"[k]+" "+v[k]+"%</div>"}).join("")+"</div>"}
 function phone(){used.a=1;render();var t=30,e=$("extra");e.innerHTML="<div class='end' id='t'></div>";var iv=setInterval(function(){if(!$("t")){clearInterval(iv);return}$("t").textContent="📞 Appel à un ami : "+t+" s";t--;if(t<0){clearInterval(iv);$("t").textContent="Temps écoulé !"}},1000);$("t").textContent="📞 Appel à un ami : 30 s"}
-$("save").onclick=function(){raw=$("raw").value;names=$("names").value||names;dbUrl=$("db").value.trim();try{localStorage.setItem("qvgdm_q",raw);localStorage.setItem("qvgdm_n",names);localStorage.setItem("qvgdm_db",dbUrl)}catch(e){}start();window.scrollTo(0,0)};
+$("save").onclick=function(){raw=$("raw").value;names=$("names").value||names;dbUrl=$("db").value.trim();fp=$("fp").value.trim();try{localStorage.setItem("qvgdm_q",raw);localStorage.setItem("qvgdm_n",names);localStorage.setItem("qvgdm_db",dbUrl);localStorage.setItem("qvgdm_fp",fp)}catch(e){}start();window.scrollTo(0,0)};
 start();
 </script></body></html>
