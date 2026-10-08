@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Qui veut gagner des millions ? Édition mariage</title>
+<title>Qui veut gagner des noces d'or ?</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--gold:#f5c542;--card:#14206b;--line:#5b6bd6}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -11,7 +11,7 @@ h1{margin:0;text-align:center;color:var(--gold);font-size:clamp(20px,4vw,34px);p
 .sub{text-align:center;opacity:.8;margin-bottom:10px}
 .wrap{display:flex;gap:16px;max-width:1100px;margin:0 auto;padding:10px 14px 30px;flex-wrap:wrap}
 .main{flex:1 1 520px;min-width:0}
-.ladder{flex:0 0 200px;display:flex;flex-direction:column;gap:3px}
+.ladder{flex:0 0 230px;display:flex;flex-direction:column;gap:3px}
 .step{display:flex;justify-content:space-between;padding:4px 10px;border-radius:6px;font-size:15px;color:#b9c2ff}
 .step.safe{color:#fff;font-weight:bold}
 .step.cur{background:var(--gold);color:#111;font-weight:bold}
@@ -36,12 +36,14 @@ button.b:disabled{opacity:.35;cursor:default;text-decoration:line-through}
 details{max-width:1100px;margin:0 auto;padding:0 14px 30px}
 summary{cursor:pointer;color:var(--gold)}
 textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;font:14px monospace;margin:6px 0}
+.pic{display:block;margin:0 auto 14px;max-width:100%;max-height:34vh;border-radius:16px;border:3px solid var(--gold)}
 @media(max-width:700px){.ans{grid-template-columns:1fr}.ladder{flex:1 1 100%;flex-direction:column-reverse}}
 </style></head><body>
-<h1 id="title">Qui veut gagner des millions ?</h1>
+<h1 id="title">Qui veut gagner des noces d'or ?</h1>
 <div class="sub" id="sub"></div>
 <div class="wrap">
   <div class="main">
+    <img id="pic" class="pic" alt="" hidden>
     <div class="q" id="q"></div>
     <div class="ans" id="ans"></div>
     <div class="bar" id="bar"></div>
@@ -51,62 +53,64 @@ textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--l
   <div class="ladder" id="ladder"></div>
 </div>
 <details><summary>⚙️ Personnaliser (noms, questions)</summary>
-  <p>Noms des mariés :</p><input id="names" value="Jeanne-Marie & Luc">
+  <p>Noms des mariés :</p><input id="names" value="Léa & Tom">
   <p>Adresse de la base Firebase pour le vote des invités (optionnel) :</p><input id="db" placeholder="https://xxxx-default-rtdb.europe-west1.firebasedatabase.app">
-  <p>Une question par ligne, au format : <code>Question | A | B | C | D | lettre de la bonne réponse</code> (15 questions max, la dernière vaut 1 000 000 €)</p>
+  <p>Une question par ligne : <code>Question | A | B | C | D | lettre de la bonne réponse | photo (facultatif)</code>. La photo est un nom de fichier du dossier <code>photos/</code> (ex. <code>q1.jpg</code>) ou une adresse https. 15 questions max, la dernière mène aux noces d'or.</p>
   <textarea id="raw" rows="14"></textarea>
   <button class="b" id="save">Enregistrer et relancer le jeu</button>
 </details>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 var DEF=[
-"Dans quelle ville les mariés se sont-ils rencontrés ? | Paris | Lyon | Marseille | Bordeaux | A",
-"Qui a dit « je t'aime » en premier ? | Elle | Lui | Les deux en même temps | Le chat | A",
-"Quel est le plat préféré du marié ? | Pizza | Couscous | Raclette | Sushis | C",
-"En quelle année ont-ils commencé à sortir ensemble ? | 2015 | 2017 | 2019 | 2021 | B",
-"Où a eu lieu la demande en mariage ? | À la plage | Au restaurant | À la maison | En montagne | B",
-"Quelle est la série préférée de la mariée ? | Friends | Game of Thrones | Emily in Paris | Plus belle la vie | A",
-"Combien de temps le marié a-t-il mis pour choisir sa tenue ? | 10 minutes | 1 heure | 1 journée | 1 mois | C",
-"Quel est le plus grand défaut du marié (selon la mariée) ? | Il ronfle | Il est en retard | Il oublie tout | Il chante faux | B",
-"Quel sera le premier voyage de noces ? | Italie | Japon | Maldives | Camping | A",
-"Quel est le vrai prénom du témoin ? | Jean | Paul | Marc | Luc | D"
+"Où les mariés se sont-ils rencontrés ? | Paris | Lyon | Marseille | Bordeaux | A | q1.jpg",
+"Qui a dit « je t'aime » en premier ? | Elle | Lui | Les deux en même temps | Le chat | A | q2.jpg",
+"Quel est le plat préféré du marié ? | Pizza | Couscous | Raclette | Sushis | C | q3.jpg",
+"En quelle année ont-ils commencé à sortir ensemble ? | 2015 | 2017 | 2019 | 2021 | B | q4.jpg",
+"Où a eu lieu la demande en mariage ? | À la plage | Au restaurant | À la maison | En montagne | B | q5.jpg",
+"Quelle est la série préférée de la mariée ? | Friends | Game of Thrones | Emily in Paris | Plus belle la vie | A | q6.jpg",
+"Combien de temps le marié a-t-il mis pour choisir sa tenue ? | 10 minutes | 1 heure | 1 journée | 1 mois | C | q7.jpg",
+"Quel est le plus grand défaut du marié (selon la mariée) ? | Il ronfle | Il est en retard | Il oublie tout | Il chante faux | B | q8.jpg",
+"Quel sera le premier voyage de noces ? | Italie | Japon | Maldives | Camping | A | q9.jpg",
+"Quel est le vrai prénom du témoin ? | Jean | Paul | Marc | Luc | D | q10.jpg",
+"Qui fait le plus souvent la cuisine à la maison ? | La mariée | Le marié | Les deux | Le livreur | C | q11.jpg",
+"Quelle est la chanson du couple ? | Titre 1 | Titre 2 | Titre 3 | Titre 4 | B | q12.jpg",
+"Qui est le plus en retard le matin ? | Elle | Lui | Aucun des deux | Le réveil | A | q13.jpg",
+"Combien d'enfants rêvent-ils d'avoir ? | 0 | 1 | 2 | 3 | C | q14.jpg",
+"Combien d'années de mariage pour fêter des noces d'or ? | 25 | 40 | 50 | 60 | C | q15.jpg"
 ].join("\n");
-var G=[100,200,300,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,1000000];
-var raw=DEF,names="Jeanne-Marie et Luc";
+var P=[{n:1,name:"coton"},{n:2,name:"cuir"},{n:5,name:"bois"},{n:7,name:"laine"},{n:9,name:"faïence"},{n:10,name:"étain"},{n:12,name:"soie"},{n:15,name:"cristal"},{n:20,name:"porcelaine"},{n:25,name:"argent"},{n:30,name:"perle"},{n:35,name:"jade"},{n:40,name:"rubis"},{n:45,name:"saphir"},{n:50,name:"or"}];
+function noce(g){return "noces "+(/^[aeiouyéèh]/i.test(g.name)?"d'":"de ")+g.name}
+var raw=DEF,names="Léa & Tom";
 try{raw=localStorage.getItem("qvgdm_q")||DEF;names=localStorage.getItem("qvgdm_n")||names}catch(e){}
 var $=function(id){return document.getElementById(id)};
-var qs,gains,i,sel,locked,used,hid,over,sid,poll,dbUrl="";
+var qs,gains,i,sel,locked,used,hid,over,sid,poll,good,dbUrl="";
 try{dbUrl=localStorage.getItem("qvgdm_db")||""}catch(e){}
 function eur(n){return n.toLocaleString("fr-FR")+" €"}
-function parse(t){return t.split("\n").map(function(l){return l.split("|").map(function(s){return s.trim()})}).filter(function(p){return p.length>=6&&p[0]&&"ABCD".indexOf(p[5].toUpperCase())>=0}).slice(0,15).map(function(p){return{q:p[0],a:p.slice(1,5),c:"ABCD".indexOf(p[5].toUpperCase())}})}
-function isSafe(j){return (j+1)%5==0&&j+1<qs.length}
-function start(){qs=parse(raw);gains=G.slice(G.length-qs.length);i=0;sel=-1;locked=false;used={f:0,p:0,a:0};hid=[];over=false;sid=Date.now().toString(36);
+function parse(t){return t.split("\n").map(function(l){return l.split("|").map(function(s){return s.trim()})}).filter(function(p){return p.length>=6&&p[0]&&"ABCD".indexOf(p[5].toUpperCase())>=0}).slice(0,15).map(function(p){return{q:p[0],a:p.slice(1,5),c:"ABCD".indexOf(p[5].toUpperCase()),img:p[6]||""}})}
+function isSafe(j){return gains[j].n==25||gains[j].n==50}
+function start(){qs=parse(raw);gains=P.slice(P.length-qs.length);i=0;sel=-1;locked=false;used={f:0,p:0,a:0};hid=[];over=false;good=0;sid=Date.now().toString(36);
  $("sub").textContent="Édition mariage : "+names;$("raw").value=raw;$("names").value=names;$("db").value=dbUrl;render()}
-function safeAmt(){for(var j=i-1;j>=0;j--)if(isSafe(j))return gains[j];return 0}
 function render(){
  var L=$("ladder");L.innerHTML="";
- for(var j=qs.length-1;j>=0;j--){var d=document.createElement("div");d.className="step"+(isSafe(j)?" safe":"")+(j==i&&!over?" cur":"")+(j<i?" done":"");d.innerHTML="<span>"+(j+1)+"</span><span>"+eur(gains[j])+"</span>";L.appendChild(d)}
+ for(var j=qs.length-1;j>=0;j--){var d=document.createElement("div");d.className="step"+(isSafe(j)?" safe":"")+(j==i&&!over?" cur":"")+(j<i?" done":"");d.innerHTML="<span>"+gains[j].n+(gains[j].n>1?" ans":" an")+"</span><span>"+gains[j].name+"</span>";L.appendChild(d)}
  if(over){return}
- var Q=qs[i];$("q").textContent=Q.q;$("ans").innerHTML="";$("extra").innerHTML="";
+ var Q=qs[i];$("q").textContent=Q.q;var im=$("pic");if(Q.img){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(Q.img)?Q.img:"photos/"+Q.img;im.hidden=false}else{im.hidden=true}$("ans").innerHTML="";$("extra").innerHTML="";
  Q.a.forEach(function(t,k){var b=document.createElement("button");b.className="a"+(sel==k?" sel":"")+(hid.indexOf(k)>=0?" off":"");b.innerHTML="<b>"+"ABCD"[k]+" :</b>"+t;b.disabled=locked;b.onclick=function(){sel=k;render()};$("ans").appendChild(b)});
  var bar=$("bar");bar.innerHTML="";
  function btn(txt,cls,fn,dis){var b=document.createElement("button");b.className="b "+cls;b.textContent=txt;b.disabled=!!dis;b.onclick=fn;bar.appendChild(b)}
  if(!locked){
   btn("Réponse finale ✔","",validate,sel<0);
-  btn("50/50","j",fifty,used.f);btn("Public","j",audience,used.p);btn("Appel à un ami","j",phone,used.a);
-  btn("Abandonner","j",quit)
+  btn("50/50","j",fifty,used.f);btn("Public","j",audience,used.p);btn("Appel à un ami","j",phone,used.a)
  }
 }
-function validate(){locked=true;var Q=qs[i],A=$("ans").children;
+function validate(){locked=true;var Q=qs[i],A=$("ans").children,ok=sel==Q.c;
  for(var k=0;k<4;k++){if(k==Q.c)A[k].className="a ok";else if(k==sel)A[k].className="a ko"}
+ if(ok)good++;
  var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";
- if(sel==Q.c){$("msg").textContent="Bonne réponse ! Vous avez "+eur(gains[i])+" 🎉";
-  if(i==qs.length-1){over=true;b.textContent="Rejouer";b.onclick=start;$("q").textContent="🏆 Félicitations "+names+" ! Vous gagnez "+eur(gains[i])+" (de bonheur) !";$("ans").innerHTML=""}
-  else{b.textContent="Question suivante";b.onclick=function(){i++;sel=-1;locked=false;hid=[];$("msg").textContent="";render()}}
- }else{over=true;$("msg").textContent="";b.textContent="Rejouer";b.onclick=start;$("q").textContent="Mauvaise réponse ! Repartez avec "+eur(safeAmt())+"."}
- bar.appendChild(b);if(over){var L=$("ladder");}}
-function quit(){over=true;$("q").textContent="Vous abandonnez et repartez avec "+eur(i>0?gains[i-1]:0)+".";$("ans").innerHTML="";$("bar").innerHTML="";var b=document.createElement("button");b.className="b";b.textContent="Rejouer";b.onclick=start;$("bar").appendChild(b);render2()}
-function render2(){var L=$("ladder");L.querySelectorAll(".cur").forEach(function(e){e.classList.remove("cur")})}
+ $("msg").textContent=(ok?"Bonne réponse ! 🎉":"Raté ! La bonne réponse était la "+"ABCD"[Q.c]+" 😅")+" On passe aux "+noce(gains[i])+" ("+gains[i].n+(gains[i].n>1?" ans":" an")+").";
+ if(i==qs.length-1){over=true;$("pic").hidden=true;b.textContent="Rejouer";b.onclick=start;$("ans").innerHTML="";$("msg").textContent="";$("q").textContent="🏆 Félicitations "+names+" ! Vous atteignez les "+noce(gains[i])+" ! Score : "+good+"/"+qs.length+" bonnes réponses."}
+ else{b.textContent="Question suivante";b.onclick=function(){i++;sel=-1;locked=false;hid=[];$("msg").textContent="";render()}}
+ bar.appendChild(b)}
 function fifty(){used.f=1;var Q=qs[i],w=[0,1,2,3].filter(function(k){return k!=Q.c});w.sort(function(){return Math.random()-.5});hid=w.slice(0,2);if(hid.indexOf(sel)>=0)sel=-1;render()}
 function api(p,m,b){return fetch(dbUrl.replace(/\/$/,"")+"/"+p+".json",{method:m||"GET",body:b?JSON.stringify(b):undefined}).then(function(r){return r.json()})}
 function show(v){var e=$("res");if(!e){clearInterval(poll);return}var c=[0,0,0,0],n=0;Object.keys(v).forEach(function(k){var x="ABCD".indexOf(v[k]);if(x>=0){c[x]++;n++}});
