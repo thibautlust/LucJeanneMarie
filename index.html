@@ -74,7 +74,7 @@ var DEF=[
 ].join("\n");
 /* ===== FIN DE LA PERSONNALISATION ===== */
 var P=[{n:1,name:"coton"},{n:5,name:"bois"},{n:10,name:"étain"},{n:15,name:"cristal"},{n:20,name:"porcelaine"},{n:25,name:"argent"},{n:30,name:"perle"},{n:35,name:"jade"},{n:40,name:"rubis"},{n:50,name:"or"}];
-function st(j){return qs.length<2?14:Math.round(j*14/(qs.length-1))}
+function st(j){var m=P.length-1;return qs.length<2?m:Math.round(j*m/(qs.length-1))}
 function noce(g){return "noces "+(/^[aeiouyéèh]/i.test(g.name)?"d'":"de ")+g.name}
 var raw=DEF,names=NOMS;
 var $=function(id){return document.getElementById(id)};
