@@ -56,26 +56,21 @@ textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--l
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 /* ===== À PERSONNALISER ===== */
-var NOMS="Luc et Jeanne-Marie";
+var NOMS="Jeanne-Marie et Luc";
 var PHOTO_FINALE="final.jpg"; /* fichier du dossier photos, ou adresse https */
 var FIREBASE_URL="https://xxxx-default-rtdb.europe-west1.firebasedatabase.app"; /* adresse de la base Firebase pour le vote du public (laisser vide = pourcentages simulés) */
 /* Une question par ligne : Question | A | B | C | D | bonne lettre | photo (facultatif). 15 questions max. */
 var DEF=[
 "Où les mariés se sont-ils rencontrés ? | Paris | Lyon | Marseille | Bordeaux | A | q1.jpg",
 "Qui a dit « je t'aime » en premier ? | Elle | Lui | Les deux en même temps | Le chat | A | q2.jpg",
-"Quel est le plat préféré du marié ? | Pizza | Couscous | Raclette | Sushis | C | q2.jpg",
+"Quel est le plat préféré du marié ? | Pizza | Couscous | Raclette | Sushis | C | q3.jpg",
 "En quelle année ont-ils commencé à sortir ensemble ? | 2015 | 2017 | 2019 | 2021 | B | q4.jpg",
 "Où a eu lieu la demande en mariage ? | À la plage | Au restaurant | À la maison | En montagne | B | q5.jpg",
 "Quelle est la série préférée de la mariée ? | Friends | Game of Thrones | Emily in Paris | Plus belle la vie | A | q6.jpg",
 "Combien de temps le marié a-t-il mis pour choisir sa tenue ? | 10 minutes | 1 heure | 1 journée | 1 mois | C | q7.jpg",
 "Quel est le plus grand défaut du marié (selon la mariée) ? | Il ronfle | Il est en retard | Il oublie tout | Il chante faux | B | q8.jpg",
 "Quel sera le premier voyage de noces ? | Italie | Japon | Maldives | Camping | A | q9.jpg",
-"Quel est le vrai prénom du témoin ? | Jean | Paul | Marc | Luc | D | q10.jpg",
-"Qui fait le plus souvent la cuisine à la maison ? | La mariée | Le marié | Les deux | Le livreur | C | q11.jpg",
-"Quelle est la chanson du couple ? | Titre 1 | Titre 2 | Titre 3 | Titre 4 | B | q12.jpg",
-"Qui est le plus en retard le matin ? | Elle | Lui | Aucun des deux | Le réveil | A | q13.jpg",
-"Combien d'enfants rêvent-ils d'avoir ? | 0 | 1 | 2 | 3 | C | q14.jpg",
-"Combien d'années de mariage pour fêter des noces d'or ? | 25 | 40 | 50 | 60 | C | q15.jpg"
+"Quel est le vrai prénom du témoin ? | Jean | Paul | Marc | Luc | D | q10.jpg"
 ].join("\n");
 /* ===== FIN DE LA PERSONNALISATION ===== */
 var P=[{n:1,name:"coton"},{n:2,name:"cuir"},{n:5,name:"bois"},{n:7,name:"laine"},{n:9,name:"faïence"},{n:10,name:"étain"},{n:12,name:"soie"},{n:15,name:"cristal"},{n:20,name:"porcelaine"},{n:25,name:"argent"},{n:30,name:"perle"},{n:35,name:"jade"},{n:40,name:"rubis"},{n:45,name:"saphir"},{n:50,name:"or"}];
