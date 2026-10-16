@@ -100,7 +100,7 @@ function render(){
 function finale(){over=true;locked=true;var im=$("pic");
  if(fp){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(fp)?fp:"photos/"+fp;im.style.maxHeight="60vh";im.hidden=false}else{im.hidden=true}
  $("ans").innerHTML="";$("msg").textContent="";$("extra").innerHTML="";
- $("q").textContent="🏆 Félicitations "+names+" ! Vous avez atteint les "+noce(gains[qs.length-1])+" ! Score : "+good+"/"+qs.length+" bonnes réponses.";
+ $("q").textContent="🏆 Félicitations ! Vous avez atteint les "+noce(gains[qs.length-1])+" ! Score : "+good+"/"+qs.length+" bonnes réponses.";
  var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";b.textContent="Rejouer";b.onclick=start;bar.appendChild(b)}
 function validate(){if(locked)return;locked=true;var Q=qs[i],A=$("ans").children,ok=sel==Q.c;
  for(var k=0;k<4;k++){if(k==Q.c)A[k].className="a ok";else if(k==sel)A[k].className="a ko"}
