@@ -36,7 +36,7 @@ button.b:disabled{opacity:.35;cursor:default;text-decoration:line-through}
 details{max-width:1100px;margin:0 auto;padding:0 14px 30px}
 summary{cursor:pointer;color:var(--gold)}
 textarea,input{width:100%;background:#0d1655;color:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;font:14px monospace;margin:6px 0}
-.pic{display:block;margin:0 auto 14px;max-width:100%;max-height:34vh;border-radius:16px;border:3px solid var(--gold)}
+.pic{display:block;margin:0 auto 14px;max-width:100%;max-height:45vh;border-radius:16px;border:3px solid var(--gold)}
 .pic[hidden]{display:none}
 @media(max-width:700px){.ans{grid-template-columns:1fr}.ladder{flex:1 1 100%;flex-direction:column-reverse}}
 </style></head><body>
@@ -61,7 +61,7 @@ var PHOTO_FINALE="final.jpg"; /* fichier du dossier photos, ou adresse https */
 var FIREBASE_URL="https://lucjeannemarie-default-rtdb.europe-west1.firebasedatabase.app/"; /* adresse de la base Firebase pour le vote du public (laisser vide = pourcentages simulés) */
 /* Une question par ligne : Question | A | B | C | D | bonne lettre | photo (facultatif). 15 questions max. */
 var DEF=[
-"1. Vos 3 petits enfants, incroyable mais vrai, sont tous nés un 28 aout... certes ! Mais de quelles années ? | 2012 et 2021 | 2012 et 2020 | 2013 et 2021 | 1954 et 1959 | B | q1.jpg",
+"1. Vos 3 petits enfants, incroyable mais vrai, sont tous nés un 28 août... certes ! Mais de quelles années ? | 2012 et 2021 | 2012 et 2020 | 2013 et 2021 | 1954 et 1959 | B | q1.jpg",
 "2. Comme s'appelle l'actuelle Princesse de Chimay ? | Françoise | Mathilde | Adèle | Bianca | A | q2.jpg",
 "3. Complétez cette chanson célèbre de Johnny :  Qu'on me donne le froid pour que j'aime la flamme. Pour que j'aime ma terre, qu'on me donne ... | la mer | une bière | l'exil | la paix | C | q3.jpg",
 "4. Où est situé ce site historique ?  | Leval-Chaudeville | Bioule | Lobbes | Séville | C | q4.jpg",
@@ -98,7 +98,7 @@ function render(){
  }
 }
 function finale(){over=true;locked=true;var im=$("pic");
- if(fp){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(fp)?fp:"photos/"+fp;im.style.maxHeight="48vh";im.hidden=false}else{im.hidden=true}
+ if(fp){im.onerror=function(){im.hidden=true};im.src=/^https?:/.test(fp)?fp:"photos/"+fp;im.style.maxHeight="60vh";im.hidden=false}else{im.hidden=true}
  $("ans").innerHTML="";$("msg").textContent="";$("extra").innerHTML="";
  $("q").textContent="🏆 Félicitations "+names+" ! Vous avez atteint les "+noce(gains[qs.length-1])+" ! Score : "+good+"/"+qs.length+" bonnes réponses.";
  var bar=$("bar");bar.innerHTML="";var b=document.createElement("button");b.className="b";b.textContent="Rejouer";b.onclick=start;bar.appendChild(b)}
